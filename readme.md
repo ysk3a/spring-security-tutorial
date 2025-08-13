@@ -43,7 +43,7 @@
 ## youtube.com/watch?v=R76S0tfv36w
 - Files of focus:
   - /config, ProductController, Product, UserInfo, UserInfoRepository, ProductService
-- Note the changes in Spring Security 3.1
+- Note the changes in Spring Boot 3.1
   - in SecurityConfig, there is no more override configure method. Instead, we need a bean of user detail service to define the authentication related stuff, `@Bean public UserDetailsService userDetailsService()`.
     - in here we can define the user details with different types of authorization levels
   - Before version 3.1, the implementation required a configure method whereas in 3.1 we need to replace with SecurityFilterChain.
@@ -58,4 +58,18 @@
   - there might be an error if the security config class did not have authentication provider method when you try to log in using an existing user
   - Recall we defined UserDetailService that talks to the db and validate the user, but we need an authenticationProvider to talk to the UserDetailService
     - We need to provide to AuthenticationProvider the user detail service and password encoder. Given that, AuthenticationProvider will talk to UserDetails and generate UserDetails object and set to it. (?)
-- In Spring Security 3.0 we need to manually create all the beans (sometimes AuthenticationManager as well) that we set in SecurityConfig class
+- In Spring Boot 3.0 we need to manually create all the beans (sometimes AuthenticationManager as well) that we set in SecurityConfig class
+
+## youtube.com/watch?v=NcLtLZqGu2M
+- Before continuing with the video, copied the git repo into here and removed other files. Setting up MySQL for spring boot application to run by starting the mysql server (in Windows10 in services window)
+  - open mysql workbench or whatever dbm application to see changes.
+- Some collections of notes from online:
+  - You don't want to use @Data as this generates equals, hashCode and toString methods, which in the case of jpa entities should be hand generated.
+    - stackoverflow.com/questions/34241718/lombok-builder-and-jpa-default-constructor
+- Anyway, to run this example before the jwt addition:
+  - we need to have mysql with the database 'jwttutorial' ready, and we have mysql setup with mysql's username and password to root and admin for demo purposes
+    - normally you would put username and password as env variables to not expose these secret values
+  - I could not figure out how to add dummy values on spring boot startup so the pre-setup would be to use some rest client to add users.
+    - I used Bruno/postman and created a new http request with POST url of (`http://`)(`localhost:8080/products/new`) with body containing json attributes of `UserInfo` without id.
+    - Now you can access certain endpoints using the credentials depending on the authorization (roles) levels.
+- Not to be confused, we would normally have a UserInfoController for addition of new user instead of having that endpoint in Products. This is just following the videos.

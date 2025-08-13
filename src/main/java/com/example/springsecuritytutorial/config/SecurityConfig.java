@@ -1,38 +1,31 @@
 package com.example.springsecuritytutorial.config;
 
 
-import com.example.springsecuritytutorial.filter.JwtFilter;
-import com.example.springsecuritytutorial.service.CustomUserDetailsService;
+import com.example.springsecuritytutorial.filter.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    @Autowired
+    private JwtAuthFilter authFilter;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -40,32 +33,46 @@ public class SecurityConfig {
         return new UserInfoUserDetailsService();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        // setting up authentication for demo purposes with demo user
-        UserDetails admin = User.withUsername("Bob2")
-                .password(encoder.encode("Pwd1"))
-                .roles("ADMIN")
-                .build();
-        UserDetails user = User.withUsername("John")
-                .password(encoder.encode("Pwd2"))
-                .roles("USER","ADMIN","HR")
-                .build();
-        // for demo purposes, we store the user in-memory instead of database
-        return new InMemoryUserDetailsManager(admin, user);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+//        // setting up authentication for demo purposes with demo user
+//        UserDetails admin = User.withUsername("Bob2")
+//                .password(encoder.encode("Pwd1"))
+//                .roles("ADMIN")
+//                .build();
+//        UserDetails user = User.withUsername("John")
+//                .password(encoder.encode("Pwd2"))
+//                .roles("USER","ADMIN","HR")
+//                .build();
+//        // for demo purposes, we store the user in-memory instead of database
+//        return new InMemoryUserDetailsManager(admin, user);
+//    }
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/product/welcome", "/product/addNewUser").permitAll()
-                                .requestMatchers("/product/**")
+                        auth.requestMatchers("/products/new", "/products/authenticate", "products/welcome").permitAll()
+                                .requestMatchers("/products/**")
                                 .authenticated()
                         //.and().formLogin().and().build();
                 )
                 .httpBasic(Customizer.withDefaults()).build();
+
+
+//        return http.csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests()
+//                .requestMatchers("/products/new","/products/authenticate").permitAll()
+//                .and()
+//                .authorizeHttpRequests().requestMatchers("/products/**")
+//                .authenticated().and()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .authenticationProvider(authenticationProvider())
+//                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+//                .build();
     }
 
     @Bean
@@ -79,6 +86,10 @@ public class SecurityConfig {
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 }
