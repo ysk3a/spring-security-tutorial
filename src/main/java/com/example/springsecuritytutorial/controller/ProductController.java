@@ -22,7 +22,7 @@ public class ProductController {
         return "Welcome this endpoint is not secure";
     }
 
-    @PostMapping("/new")
+    @PostMapping("/addNewUser")
     public String addNewUser(@RequestBody UserInfo userInfo){
         return service.addUser(userInfo);
     }

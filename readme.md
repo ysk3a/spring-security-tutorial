@@ -39,3 +39,23 @@
   - you can test the stateless authentication (i.e. our input not stored in any cookie or database), by removing the authentication key 
 - Files of Focus:
   - SecurityConfig, WelcomeController, AuthRequest, User, JwtFilter, UserRepository, CustomUserDetailsService, JwtUtil, /resources
+
+## youtube.com/watch?v=R76S0tfv36w
+- Files of focus:
+  - /config, ProductController, Product, UserInfo, UserInfoRepository, ProductService
+- Note the changes in Spring Security 3.1
+  - in SecurityConfig, there is no more override configure method. Instead, we need a bean of user detail service to define the authentication related stuff, `@Bean public UserDetailsService userDetailsService()`.
+    - in here we can define the user details with different types of authorization levels
+  - Before version 3.1, the implementation required a configure method whereas in 3.1 we need to replace with SecurityFilterChain.
+    - Spring Security Filter Chain class is used and expose as a bean and then configure our authorization stuff, `@Bean public SecurityFilterChain securityFilterChain`.
+    - In this example application, ProductController has endpoints.
+      - `requestMatchers("/product/welcome", "/product/addNewUser").permitAll()` open for all
+      - all the rest of the endpoint, `.requestMatchers("/product/**").authenticated()`, require authentication
+- Authorization vs Authentication
+  - In the example code, we have `UserDetailsService userDetailsService(PasswordEncoder encoder)` which we manually set two different type of users with different roles. Here we create a user which allows Bob to authenticate. We have roles to authorize or restrict specific endpoint access depending on the type of roles.
+    - We can do the authorization customizing with the `@PreAuthorize` annotation in the controller then we need to tell spring security we have set method level authorization with `@EnableMethodSecurity`
+- AuthenticationProvider
+  - there might be an error if the security config class did not have authentication provider method when you try to log in using an existing user
+  - Recall we defined UserDetailService that talks to the db and validate the user, but we need an authenticationProvider to talk to the UserDetailService
+    - We need to provide to AuthenticationProvider the user detail service and password encoder. Given that, AuthenticationProvider will talk to UserDetails and generate UserDetails object and set to it. (?)
+- In Spring Security 3.0 we need to manually create all the beans (sometimes AuthenticationManager as well) that we set in SecurityConfig class
