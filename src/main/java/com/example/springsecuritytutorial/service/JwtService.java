@@ -7,8 +7,15 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +24,7 @@ import java.util.function.Function;
 @Component
 public class JwtService {
 
-
-    public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
-
+    public static final String DUMMY_SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -68,10 +73,31 @@ public class JwtService {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+1000*60*30))
                 .signWith(getSignKey()).compact();
+        // signWith method Signs the constructed JWT with the specified key using the key's recommended signature algorithm as defined below (in the doc), producing a JWS.
     }
 
     private Key getSignKey() {
-        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes= Decoders.BASE64.decode(DUMMY_SECRET);
+        System.out.println(Keys.hmacShaKeyFor((keyBytes)).getAlgorithm().equals("HmacSHA256"));
+        System.out.println(Keys.hmacShaKeyFor((keyBytes)).getAlgorithm().equals("HmacSHA384"));
+        System.out.println(Keys.hmacShaKeyFor((keyBytes)).getAlgorithm().equals("HmacSHA512"));
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private static Key getKeyFromKeyGenerator(int keySize) throws NoSuchAlgorithmException {
+        // baeldung.com/java-secure-aes-key
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(keySize);
+        return keyGenerator.generateKey();
+    }
+
+    private static Key getPasswordBasedKey(int keySize, char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // baeldung.com/java-secure-aes-key
+        byte[] salt = new byte[100];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(salt);
+        PBEKeySpec pbeKeySpec = new PBEKeySpec(password, salt, 1000, keySize);
+        SecretKey pbeKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(pbeKeySpec);
+        return new SecretKeySpec(pbeKey.getEncoded(), "AES");
     }
 }
