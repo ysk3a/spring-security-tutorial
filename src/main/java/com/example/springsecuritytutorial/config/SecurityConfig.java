@@ -35,34 +35,19 @@ public class SecurityConfig {
         return new UserInfoUserDetailsService();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-//        // setting up authentication for demo purposes with demo user
-//        UserDetails admin = User.withUsername("Bob2")
-//                .password(encoder.encode("Pwd1"))
-//                .roles("ADMIN")
-//                .build();
-//        UserDetails user = User.withUsername("John")
-//                .password(encoder.encode("Pwd2"))
-//                .roles("USER","ADMIN","HR")
-//                .build();
-//        // for demo purposes, we store the user in-memory instead of database
-//        return new InMemoryUserDetailsManager(admin, user);
-//    }
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // stackoverflow.com/questions/78112501/sessionmanagement-and-csrf-cors-is-deprecated-since-version-6-1
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                                auth.requestMatchers("/products/new", "/products/authenticate", "products/welcome").permitAll()
+                                auth.requestMatchers("/products/new", "/products/authenticate", "products/welcome", "/products/signUp", "/products/login", "/products/refreshToken").permitAll()
                                         .requestMatchers("/products/**")
                                         .authenticated()
-                        //.and().formLogin().and().build();
-                ).sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
+                )
+                .sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                ).httpBasic(Customizer.withDefaults())
+                )
+                .httpBasic(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -86,37 +71,3 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 }
-//@Configuration
-//@EnableWebSecurity
-//public class SecurityConfig extends WebSecurityConfigurerAdapter {
-//
-//    @Autowired
-//    private CustomUserDetailsService userDetailsService;
-//
-//    @Autowired
-//    private JwtFilter jwtFilter;
-//
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(userDetailsService);
-//    }
-//    @Bean
-//    public PasswordEncoder passwordEncoder(){
-//        return NoOpPasswordEncoder.getInstance();
-//    }
-//
-//    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
-//
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.csrf(Customizer.withDefaults()).disable().authorizeRequests().antMatchers("/authenticate")
-//                .permitAll().anyRequest().authenticated()
-//                .and().exceptionHandling().and().sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-//    }
-//}
