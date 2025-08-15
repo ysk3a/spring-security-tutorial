@@ -104,3 +104,17 @@
   - session is set to be stateless in SecurityConfig since we don't want to keep anything in cookies or anything
   - question: not sure about the order of all the dot notation methods in `securityFilterChain`?
 - Client -> authenticate endpoint -> generate Token -> return to client token -> use token when sending other request -> spring boot verify and validate token
+
+
+## youtube.com/watch?v=Wp4h_wYXqmU
+- So far we have spring boot application that can authenticate and authorize restricted endpoints. however, for all authenticated request, we need to input username and password.
+  - instead we use jwt and pass that token to the backend which is then verified before responding back.
+  - but we have not implemented refresh token because of a certain amount of the time passes beyond the expiry date we set for the jwt, client needs to send another authentication request when the token expires.
+    - This is where RefreshTokenService and `authenticateAndGetToken` and `refreshToken` methods are the key changes.
+    - Flow: User will log in via the /login endpoint and that will return a res.body.accessToken and res.body.token json object where the accessToken is jwt and token is the refreshToken we need to refresh on expiry of accessToken.
+    - Note, you might get exception when trying to log in again when jwt is not expired (e.g. Duplicate entry '3' for key refreshtoken)
+  - Note in the rest client like bruno, the test script is updated to take account the response object being JwtResponse.
+- For the rest client side in bruno see the private repo `github.com/ysk3a/spring-security-tutorial-api-collections/`
+  - note the `scripts`/`test` contents as they automatically set the token/accessToken on authentication/refreshing
+  - any changes in the repo (or if locally in the ysk3a /restclient in /springboot folder) need to do any git related stuff for changes
+  - youtube.com/watch?v=vbykqtXW60M

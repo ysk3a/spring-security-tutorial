@@ -71,7 +71,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(userName)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+1000*60*30))
+                .expiration(new Date(System.currentTimeMillis()+1000*60*2))
                 .signWith(getSignKey()).compact();
         // signWith method Signs the constructed JWT with the specified key using the key's recommended signature algorithm as defined below (in the doc), producing a JWS.
     }
