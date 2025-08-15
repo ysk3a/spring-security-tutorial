@@ -41,16 +41,14 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                                 auth.requestMatchers("/products/new", "/products/authenticate", "products/welcome", "/products/signUp", "/products/login", "/products/refreshToken").permitAll()
-                                        .requestMatchers("/products/**")
-                                        .authenticated()
+                                        .requestMatchers("/products/**").authenticated()
                 )
-                .sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(sessionManagementCustomizer -> sessionManagementCustomizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+        // is httpBasic needed? stackoverflow.com/questions/57574981/what-is-httpbasic-method-in-spring-security
     }
 
     @Bean
